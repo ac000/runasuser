@@ -9,24 +9,78 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
+#include <fcntl.h>
 #include <pwd.h>
 
+int check_user_auth(char *from_user, char *to_user, FILE *fp);
+
+int check_user_auth(char *from_user, char *to_user, FILE *fp)
+{
+	int ret = 0;
+	char buf[513];
+	char user[13];
+	char *user_list;
+	char *token;
+
+	user_list = malloc(sizeof(char *) * 101);
+	memset(user_list, 0, 101);
+
+	while (fgets(buf, 512, fp) && !ret) {
+		sscanf(buf, "%12s\t%100s[^\n]", user, user_list);
+		if (strcmp(user, from_user) == 0) {
+			for (;;) {
+				token = strtok(user_list, ",");
+				if (token == NULL)
+					break;
+				if (strcmp(token, to_user) == 0) {
+					ret = 1;
+					break;
+				}
+				user_list = NULL;
+			}
+		}
+	}
+
+	return ret;
+}
 
 int main(int argc, char **argv)
 {
 	int i;
 	struct passwd *pwd;
+	static FILE *fp;
+	static const char *authfile = "./runasuser.conf";
 
-	if (argc < 2) {
-		fprintf(stderr, "Usage: runrails program [args ...]\n");
+	if (argc < 3) {
+		fprintf(stderr, "Usage: runasuser user program [args ...]\n");
 		exit(1);
 	}
 
-	pwd = getpwnam("rails");
-		
+	pwd = getpwnam(argv[1]);
+	if (!pwd) {
+		fprintf(stderr, "Error: No such user %s\n", argv[1]);
+		exit(1);
+	}
+
+	fp = fopen(authfile, "r");
+	if (!fp) {
+		fprintf(stderr, "Error: Can't open %s\n", authfile);
+		exit(1);
+	}
+
+	/* Check the user calling runasuser */
+	pwd = getpwuid(getuid()); /* Yes, we want the _real_ uid */
+	if (!check_user_auth(pwd->pw_name, argv[1], fp)) {
+		fprintf(stderr, "Error: You are not authorized to run as %s\n",
+								argv[1]);
+		exit(1);
+	}
+	fclose(fp);
+
+	pwd = getpwnam(argv[1]);
 	/*
   	 * Order is important, if setuid comes first,
 	 * then the setgid is unable to perform.
@@ -40,16 +94,15 @@ int main(int argc, char **argv)
 
 	setenv("HOME", pwd->pw_dir, 1);
 	setenv("USER", pwd->pw_name, 1);
-	umask(0007);
 	chdir(pwd->pw_dir);
 
 	printf("Execing [ ");
-	for (i = 1; i < argc; i++)
+	for (i = 2; i < argc; i++)
 		printf("%s ", argv[i]);	
 
 	printf("]\n");
 
-	execvp(argv[1], argv + 1);
+	execvp(argv[2], argv + 2);
 
 	exit(0);
 }
