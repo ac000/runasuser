@@ -52,6 +52,7 @@ int main(int argc, char **argv)
 	int i;
 	struct passwd *pwd;
 	static FILE *fp;
+	char *to_chdir;
 	static const char *authfile = "./runasuser.conf";
 
 	if (argc < 3) {
@@ -94,7 +95,10 @@ int main(int argc, char **argv)
 
 	setenv("HOME", pwd->pw_dir, 1);
 	setenv("USER", pwd->pw_name, 1);
-	chdir(pwd->pw_dir);
+
+	to_chdir = getenv("RUNASUSER_CHDIR");
+	if (!to_chdir || atoi(to_chdir) != 0)
+		chdir(pwd->pw_dir);
 
 	printf("Execing [ ");
 	for (i = 2; i < argc; i++)
