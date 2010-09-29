@@ -15,9 +15,9 @@
 #include <fcntl.h>
 #include <pwd.h>
 
-int check_user_auth(char *from_user, char *to_user, FILE *fp);
+static int check_user_auth(char *from_user, char *to_user, FILE *fp);
 
-int check_user_auth(char *from_user, char *to_user, FILE *fp)
+static int check_user_auth(char *from_user, char *to_user, FILE *fp)
 {
 	int ret = 0;
 	char buf[513];
