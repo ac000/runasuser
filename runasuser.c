@@ -20,22 +20,24 @@ static int check_user_auth(char *from_user, char *to_user, FILE *fp);
 static int check_user_auth(char *from_user, char *to_user, FILE *fp)
 {
 	int ret = 0;
+	int done = 0;
 	char buf[513];
-	char user[13];
+	char *user;
 	char *user_list;
 	char *token;
 
-	user_list = malloc(sizeof(char *) * 101);
-	memset(user_list, 0, 101);
-
-	while (fgets(buf, 512, fp) && !ret) {
-		sscanf(buf, "%12s\t%100s[^\n]", user, user_list);
+	while (fgets(buf, 512, fp) && !done) {
+		sscanf(buf, "%ms\t%ms[^\n]", &user, &user_list);
 		if (strcmp(user, from_user) == 0) {
 			for (;;) {
 				token = strtok(user_list, ",");
-				if (token == NULL)
+				if (token == NULL) {
+					done = 1;
+					ret = 0;
 					break;
+				}
 				if (strcmp(token, to_user) == 0) {
+					done = 1;
 					ret = 1;
 					break;
 				}
@@ -43,6 +45,8 @@ static int check_user_auth(char *from_user, char *to_user, FILE *fp)
 			}
 		}
 	}
+	free(user_list);
+	free(user);
 
 	return ret;
 }
