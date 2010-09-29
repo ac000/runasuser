@@ -60,13 +60,13 @@ int main(int argc, char **argv)
 
 	if (argc < 3) {
 		fprintf(stderr, "Usage: runasuser user program [args ...]\n");
-		exit(1);
+		exit(-1);
 	}
 
 	pwd = getpwnam(argv[1]);
 	if (!pwd) {
 		fprintf(stderr, "Error: No such user %s\n", argv[1]);
-		exit(1);
+		exit(-1);
 	}
 
 	if ((fp = fopen("/etc/runasuser.conf", "r"))) {
@@ -83,7 +83,7 @@ int main(int argc, char **argv)
 	if (!check_user_auth(pwd->pw_name, argv[1], fp)) {
 		fprintf(stderr, "Error: You are not authorized to run as %s\n",
 								argv[1]);
-		exit(1);
+		exit(-1);
 	}
 	fclose(fp);
 
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
 	if (setuid(pwd->pw_uid) != 0) {
 		/* It's important to bail if the setuid() fails. */
 		fprintf(stderr, "Error: Unable to setuid.\n");
-		exit(1);
+		exit(-1);
 	}
 
 	setenv("HOME", pwd->pw_dir, 1);
