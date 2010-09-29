@@ -6,3 +6,30 @@ runasuser allows you specify what users can run programs as what user.
 It's a bit like sudo, but the other way around. It lets you specify what
 user to run as rather than what programs can be run.
 
+See the runasuser(1) man page for details.
+
+
+Install
+=======
+
+In order to run as other users runasuser needs to be able to setuid(). The
+tradtional way to do this would be to set the setuid bit on the binary. e.g
+
+	# chmod 4755 runasuser
+
+However there is also another way. Using file capabilities you can give the
+binary just the amount of privileges it needs and no more. In this case it
+only needs the CAP_SETUID capability set, this can be done with the following
+
+	# setcap cap_setuid=ep runasuser
+
+and the binary only needs to be installed 0755
+
+
+Configuration
+=============
+
+runasuser is configured via a simple text file, runasuser.conf. See the
+runasuser.conf(5) man page.
+
+runasuser looks in /etc and /usr/local/etc for this file.
