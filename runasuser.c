@@ -57,7 +57,6 @@ int main(int argc, char **argv)
 	struct passwd *pwd;
 	static FILE *fp;
 	char *to_chdir;
-	static const char *authfile = "./runasuser.conf";
 
 	if (argc < 3) {
 		fprintf(stderr, "Usage: runasuser user program [args ...]\n");
@@ -70,10 +69,13 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	fp = fopen(authfile, "r");
-	if (!fp) {
-		fprintf(stderr, "Error: Can't open %s\n", authfile);
-		exit(1);
+	if ((fp = fopen("/etc/runasuser.conf", "r"))) {
+		;
+	} else if ((fp = fopen("/usr/local/etc/runasuser.conf", "r"))) {
+		;
+	} else {
+		fprintf(stderr, "Error: Can't open runasuser.conf\n");
+		exit(-1);
 	}
 
 	/* Check the user calling runasuser */
