@@ -1,0 +1,21 @@
+.TH RUNASUSER.CONF 5 "September 29, 2010" 
+.SH NAME 
+runasuser.conf - runasuser configuration file
+
+.SH DESCRIPTION 
+.B runasuser.conf
+is a text file that contains a list of users that are allowed to run as
+other users.
+
+It contains one line per user that specifies which users that user can run as.
+
+.RS
+from_user	to_user1,to_user2,to_user3
+
+.RE
+from_user and the user list can seperated by spaces or tabs. The file must end
+with a blank line. See runasuser.conf.example
+
+.SH SEE ALSO
+	runasuser(1)
+
