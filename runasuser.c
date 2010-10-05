@@ -43,6 +43,7 @@ static int check_user_auth(char *from_user, char *to_user, FILE *fp)
 			}
 		}
 	}
+	free(user_list);
 
 	return ret;
 }
