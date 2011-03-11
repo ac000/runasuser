@@ -9,8 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/types.h>
+#include <unistd.h>
+#include <grp.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <pwd.h>
@@ -83,6 +84,12 @@ int main(int argc, char **argv)
 		exit(-1);
 	}
 	fclose(fp);
+
+	/* Drop all supplementary groups from the calling user */
+	if (setgroups(0, NULL) != 0) {
+		fprintf(stderr, "Error: setgroups() failed.\n");
+		exit(-1);
+	}
 
 	pwd = getpwnam(argv[1]);
 	/*
