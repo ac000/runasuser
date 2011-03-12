@@ -85,7 +85,7 @@ int main(int argc, char **argv)
 	}
 	fclose(fp);
 
-	/* Drop all supplementary groups from the calling user */
+	/* Drop all supplementary groups of the calling user */
 	if (setgroups(0, NULL) != 0) {
 		fprintf(stderr, "Error: setgroups() failed.\n");
 		exit(-1);
