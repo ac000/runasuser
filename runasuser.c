@@ -11,10 +11,10 @@
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <grp.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <pwd.h>
+#include <grp.h>
 
 static int check_user_auth(char *from_user, char *to_user, FILE *fp);
 
