@@ -55,6 +55,7 @@ int main(int argc, char **argv)
 	struct passwd *pwd;
 	static FILE *fp;
 	char *to_chdir;
+	char *from_user;
 
 	if (argc < 3) {
 		fprintf(stderr, "Usage: runasuser user program [args ...]\n");
@@ -78,7 +79,8 @@ int main(int argc, char **argv)
 
 	/* Check the user calling runasuser */
 	pwd = getpwuid(getuid()); /* Yes, we want the _real_ uid */
-	if (!check_user_auth(pwd->pw_name, argv[1], fp)) {
+	from_user = pwd->pw_name;
+	if (!check_user_auth(from_user, argv[1], fp)) {
 		fprintf(stderr, "Error: You are not authorized to run as %s\n",
 								argv[1]);
 		exit(-1);
@@ -121,6 +123,7 @@ int main(int argc, char **argv)
 	}
 	setenv("HOME", pwd->pw_dir, 1);
 	setenv("USER", pwd->pw_name, 1);
+	setenv("RUNASUSER_USER", from_user, 1);
 
 	/*
 	 * Check whether to chdir() into the users home directory
