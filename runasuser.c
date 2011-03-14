@@ -114,6 +114,11 @@ int main(int argc, char **argv)
 		exit(-1);
 	}
 
+	/* Clear the shell environment before setting up a new one */
+	if (clearenv() != 0) {
+		fprintf(stderr, "Error: Unable to clear environment.\n");
+		exit(-1);
+	}
 	setenv("HOME", pwd->pw_dir, 1);
 	setenv("USER", pwd->pw_name, 1);
 
