@@ -19,11 +19,12 @@ tradtional way to do this would be to set the setuid bit on the binary. e.g
 
 	# chmod 4755 runasuser
 
-However there is also another way. Using file capabilities you can give the
-binary just the amount of privileges it needs and no more. In this case it
-only needs the CAP_SETUID capability set, this can be done with the following
+However there is also another way. Using POSIX file capabilities you can give
+the binary just the amount of privileges it needs and no more. In this case it
+only needs the CAP_SETUID and CAP_SETGID capabilities, this can be done with
+the following
 
-	# setcap cap_setuid=ep runasuser
+	# setcap cap_setuid,cap_setgid=ep runasuser
 
 and the binary only needs to be installed 0755
 
