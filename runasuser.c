@@ -103,6 +103,12 @@ int main(int argc, char **argv)
 		exit(-1);
 	}
 
+	/* Set the supplementary groups for the new user */
+	if (initgroups(pwd->pw_name, pwd->pw_gid) != 0) {
+		fprintf(stderr, "Error: initgroups() failed.\n");
+		exit(-1);
+	}
+
 	setenv("HOME", pwd->pw_dir, 1);
 	setenv("USER", pwd->pw_name, 1);
 
