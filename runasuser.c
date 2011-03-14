@@ -93,6 +93,17 @@ int main(int argc, char **argv)
 
 	pwd = getpwnam(argv[1]);
 	/*
+	 * Set the supplementary groups for the new user
+	 *
+	 * This needs to come before setuid() as this needs the
+	 * CAP_SETGID capability
+	 */
+	if (initgroups(pwd->pw_name, pwd->pw_gid) != 0) {
+		fprintf(stderr, "Error: initgroups() failed.\n");
+		exit(-1);
+	}
+
+	/*
   	 * Order is important, if setuid comes first,
 	 * then the setgid is unable to perform.
 	 */
@@ -100,12 +111,6 @@ int main(int argc, char **argv)
 	if (setuid(pwd->pw_uid) != 0) {
 		/* It's important to bail if the setuid() fails. */
 		fprintf(stderr, "Error: Unable to setuid.\n");
-		exit(-1);
-	}
-
-	/* Set the supplementary groups for the new user */
-	if (initgroups(pwd->pw_name, pwd->pw_gid) != 0) {
-		fprintf(stderr, "Error: initgroups() failed.\n");
 		exit(-1);
 	}
 
