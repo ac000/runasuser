@@ -80,10 +80,13 @@ int main(int argc, char **argv)
 	/* Check the user calling runasuser */
 	pwd = getpwuid(getuid()); /* Yes, we want the _real_ uid */
 	from_user = pwd->pw_name;
-	if (!check_user_auth(from_user, argv[1], fp)) {
-		fprintf(stderr, "Error: You are not authorized to run as %s\n",
-								argv[1]);
-		exit(-1);
+	/* Allow root to run as any user */
+	if (getuid() > 0) {
+		if (!check_user_auth(from_user, argv[1], fp)) {
+			fprintf(stderr, "Error: You are not authorized to run "
+							"as %s\n", argv[1]);
+			exit(-1);
+		}
 	}
 	fclose(fp);
 
