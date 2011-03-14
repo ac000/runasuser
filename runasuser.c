@@ -112,6 +112,12 @@ int main(int argc, char **argv)
 	setenv("HOME", pwd->pw_dir, 1);
 	setenv("USER", pwd->pw_name, 1);
 
+	/*
+	 * Check whether to chdir() into the users home directory
+	 *
+	 * YES, if RUNASUSER_CHDIR = 1 (default)
+	 * NO, if RUNASUSER_CHDIR = 0
+	 */
 	to_chdir = getenv("RUNASUSER_CHDIR");
 	if (!to_chdir || atoi(to_chdir) != 0)
 		chdir(pwd->pw_dir);

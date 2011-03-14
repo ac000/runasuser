@@ -18,6 +18,14 @@ The prgram you wish to run.
 .B args
 The arguments to the program if any.
 
+.SH "ENVIRONMENT VARIABLES"
+.TP 20
+RUNASUSER_CHDIR
+This controls whether or not runasuser will chdir(2) into the users home
+directory.
+
+The default is to chdir. If set to 0, runasuser will not chdir.
+
 .SH FILES
 .TP 35
 .B /etc/runasuser.conf
