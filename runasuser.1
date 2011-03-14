@@ -1,4 +1,4 @@
-.TH RUNASUSER 1 "September 29, 2010" 
+.TH RUNASUSER 1 "March 14, 2011"
 .SH NAME 
 runasuser - Execute programs as a specified user.
 
@@ -8,18 +8,26 @@ runasuser <user> <program> [args ...]
 .SH DESCRIPTION 
 Run programs as a specified user as permitted via a config file.
 
-.TP
+.TP 12
 .B user
 The user you wish to run as.
-.TP
+.TP 12
 .B program
 The prgram you wish to run.
-.TP
+.TP 12
 .B args
 The arguments to the program if any.
 
-.SH SEE ALSO
-	runasuser.conf(5)
+.SH FILES
+.TP 35
+.B /etc/runasuser.conf
+runasuser configuration file
+.TP 35
+.B /usr/local/etc/runasuser.conf
+runasuser configuration file
+
+.SH "SEE ALSO"
+runasuser.conf(5)
 
 .SH SOURCE
 Source available at http://github.com/ac000/runasuser under the GNU GPLv2
