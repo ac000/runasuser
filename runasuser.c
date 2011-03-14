@@ -112,7 +112,10 @@ int main(int argc, char **argv)
   	 * Order is important, if setuid comes first,
 	 * then the setgid is unable to perform.
 	 */
-	setgid(pwd->pw_gid);
+	if (setgid(pwd->pw_gid) != 0) {
+		fprintf(stderr, "Error: Unable to setgid.\n");
+		exit(-1);
+	}
 	if (setuid(pwd->pw_uid) != 0) {
 		/* It's important to bail if the setuid() fails. */
 		fprintf(stderr, "Error: Unable to setuid.\n");
