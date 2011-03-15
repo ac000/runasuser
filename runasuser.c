@@ -120,7 +120,7 @@ int main(int argc, char **argv)
 	} else if ((fp = fopen("/usr/local/etc/runasuser.conf", "r"))) {
 		;
 	} else {
-		fprintf(stderr, "Error: Can't open runasuser.conf\n");
+		perror("fopen (runasuser.conf)");
 		exit(-1);
 	}
 
@@ -139,7 +139,7 @@ int main(int argc, char **argv)
 
 	/* Drop all supplementary groups of the calling user */
 	if (setgroups(0, NULL) != 0) {
-		fprintf(stderr, "Error: setgroups() failed.\n");
+		perror("setgroups");
 		exit(-1);
 	}
 
@@ -151,7 +151,7 @@ int main(int argc, char **argv)
 	 * CAP_SETGID capability
 	 */
 	if (initgroups(pwd->pw_name, pwd->pw_gid) != 0) {
-		fprintf(stderr, "Error: initgroups() failed.\n");
+		perror("initgroups");
 		exit(-1);
 	}
 
@@ -160,18 +160,18 @@ int main(int argc, char **argv)
 	 * then the setgid is unable to perform.
 	 */
 	if (setgid(pwd->pw_gid) != 0) {
-		fprintf(stderr, "Error: Unable to setgid.\n");
+		perror("setgid");
 		exit(-1);
 	}
 	if (setuid(pwd->pw_uid) != 0) {
 		/* It's important to bail if the setuid() fails. */
-		fprintf(stderr, "Error: Unable to setuid.\n");
+		perror("setuid");
 		exit(-1);
 	}
 
 	/* Clear the shell environment before setting up a new one */
 	if (clearenv() != 0) {
-		fprintf(stderr, "Error: Unable to clear environment.\n");
+		perror("clearenv");
 		exit(-1);
 	}
 	setenv("HOME", pwd->pw_dir, 1);
