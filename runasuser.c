@@ -73,7 +73,7 @@ static int check_user_auth(char *from_user, char *to_user, FILE *fp)
 	char *user_list;
 	char *token;
 
-	user_list = malloc(sizeof(char *) * 101);
+	user_list = malloc(101);
 	memset(user_list, 0, 101);
 
 	while (fgets(buf, 4096, fp) && !ret) {
