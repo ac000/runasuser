@@ -16,7 +16,54 @@
 #include <pwd.h>
 #include <grp.h>
 
+static void setup_environment(char *to_user, FILE *fp);
 static int check_user_auth(char *from_user, char *to_user, FILE *fp);
+
+static void setup_environment(char *to_user, FILE *fp)
+{
+	char *string;
+	char *token;
+	char *subtoken;
+	char *saveptr1 = NULL;
+	char *saveptr2 = NULL;
+	char *env;
+	char *value;
+	char buf[4096];
+	char user[13];
+
+	string = malloc(4096);
+
+	while (fgets(buf, 4096, fp)) {
+		memset(string, 0, 4096);
+		sscanf(buf, "%12s\t%4095s[^\n]", user, string);
+		if (strcmp(user, to_user) == 0) {
+			for (;;) {
+				token = strtok_r(string, ",", &saveptr1);
+				if (token == NULL)
+					break;
+
+				/*
+				 * Split the environment string into its
+				 * name and value parts, e.g
+				 *
+				 * TERM=linux into TERM & linux for passing
+				 * to setenv()
+				 */
+				subtoken = strtok_r(token, "=", &saveptr2);
+				env = subtoken;
+				token = NULL;
+				subtoken = strtok_r(token, "=", &saveptr2);
+				value = subtoken;
+
+				setenv(env, value, 1);
+
+				string = NULL;
+			}
+			break;
+		}
+	}
+	free(string);
+}
 
 static int check_user_auth(char *from_user, char *to_user, FILE *fp)
 {
@@ -130,6 +177,13 @@ int main(int argc, char **argv)
 	setenv("HOME", pwd->pw_dir, 1);
 	setenv("USER", pwd->pw_name, 1);
 	setenv("RUNASUSER_USER", from_user, 1);
+	/* Read the rest of the environment from the config file */
+	if ((fp = fopen("/etc/runasuser.env.conf", "r")))
+		;
+	else ((fp = fopen("/usr/local/etc/runasuser.env.conf", "r")))
+		;
+	if (fp)
+		setup_environment(pwd->pw_name, fp);
 
 	/*
 	 * Check whether to chdir() into the users home directory

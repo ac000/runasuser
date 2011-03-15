@@ -35,4 +35,9 @@ Configuration
 runasuser is configured via a simple text file, runasuser.conf. See the
 runasuser.conf(5) man page.
 
-runasuser looks in /etc and /usr/local/etc for this file.
+You can create an optional runasuser.env.conf file that contains
+environment settings you want setup for a particular user.
+
+See the runasuser.env.conf(5) man page.
+
+runasuser looks in /etc and /usr/local/etc for these files.
