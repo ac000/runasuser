@@ -32,6 +32,10 @@ static void setup_environment(char *to_user, FILE *fp)
 	char user[13];
 
 	string = malloc(4096);
+	if (!string) {
+		perror("malloc (string)");
+		exit(-1);
+	}
 
 	while (fgets(buf, 4096, fp)) {
 		memset(string, 0, 4096);
@@ -74,6 +78,10 @@ static int check_user_auth(char *from_user, char *to_user, FILE *fp)
 	char *token;
 
 	user_list = malloc(101);
+	if (!user_list) {
+		perror("malloc (user_list)");
+		exit(-1);
+	}
 	memset(user_list, 0, 101);
 
 	while (fgets(buf, 4096, fp) && !ret) {
