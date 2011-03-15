@@ -68,7 +68,7 @@ static void setup_environment(char *to_user, FILE *fp)
 static int check_user_auth(char *from_user, char *to_user, FILE *fp)
 {
 	int ret = 0;
-	char buf[513];
+	char buf[4096];
 	char user[13];
 	char *user_list;
 	char *token;
@@ -76,7 +76,7 @@ static int check_user_auth(char *from_user, char *to_user, FILE *fp)
 	user_list = malloc(sizeof(char *) * 101);
 	memset(user_list, 0, 101);
 
-	while (fgets(buf, 512, fp) && !ret) {
+	while (fgets(buf, 4096, fp) && !ret) {
 		sscanf(buf, "%12s\t%100s[^\n]", user, user_list);
 		if (strcmp(user, from_user) == 0) {
 			for (;;) {
