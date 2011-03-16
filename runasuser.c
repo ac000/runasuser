@@ -111,6 +111,7 @@ int main(int argc, char **argv)
 	static FILE *fp;
 	char *to_chdir;
 	char *from_user;
+	long maxfd;
 
 	if (argc < 3) {
 		fprintf(stderr, "Usage: runasuser user program [args ...]\n");
@@ -190,8 +191,10 @@ int main(int argc, char **argv)
 		;
 	else ((fp = fopen("/usr/local/etc/runasuser.env.conf", "r")))
 		;
-	if (fp)
+	if (fp) {
 		setup_environment(pwd->pw_name, fp);
+		fclose(fp);
+	}
 
 	/*
 	 * Check whether to chdir() into the users home directory
@@ -208,6 +211,14 @@ int main(int argc, char **argv)
 		printf("%s ", argv[i]);	
 
 	printf("]\n");
+
+	/*
+	 * Close all open file descriptors above 2 (stderr)
+	 * A little heavy handed, but gets the job done.
+	 */
+	maxfd = sysconf(_SC_OPEN_MAX);
+	for (i = 3; i < maxfd; i++)
+		close(i);
 
 	execvp(argv[2], argv + 2);
 
