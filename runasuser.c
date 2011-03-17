@@ -27,25 +27,13 @@ static int check_user_auth(char *from_user, char *to_user, FILE *fp);
 
 static void do_log(char *from_user, char *to_user, char *command)
 {
-	char *log_msg;
-	char *tty = ttyname(0) + 5; /* Loose the /dev/ */
-	char *cwd = get_current_dir_name();
-	int msg_bits = 64; /* Space for message field names etc... */
-
-	log_msg = malloc(strlen(from_user) + strlen(to_user) +
-					strlen(command) + strlen(tty) +
-					strlen(cwd) + msg_bits);
-	memset(log_msg, 0, strlen(log_msg));
-	sprintf(log_msg, "%s : TTY=%s ; PWD=%s ; USER=%s ; COMMAND=%s",
-						from_user, tty, cwd,
-						to_user, command);
-
 	openlog("runasuser", LOG_ODELAY, LOG_AUTHPRIV);
-	syslog(LOG_INFO, log_msg);
+	/* We do ttyname(0) + 5 to loose the /dev/ */
+	syslog(LOG_INFO, "%s : TTY=%s ; PWD=%s ; USER=%s ; COMMAND=%s",
+						from_user, ttyname(0) + 5,
+						get_current_dir_name(),
+						to_user, command);
 	closelog();
-
-	free(cwd);
-	free(log_msg);
 }
 
 static int command_found(char *command, char *cmdpath)
