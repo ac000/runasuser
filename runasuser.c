@@ -178,6 +178,18 @@ int main(int argc, char **argv)
 		exit(-1);
 	}
 
+	/*
+	 * Check whether to chdir() into the users home directory
+	 *
+	 * Needs to come before clearenv()
+	 *
+	 * YES, if RUNASUSER_CHDIR = 1 (default)
+	 * NO, if RUNASUSER_CHDIR = 0
+	 */
+	to_chdir = getenv("RUNASUSER_CHDIR");
+	if (!to_chdir || atoi(to_chdir) != 0)
+		chdir(pwd->pw_dir);
+
 	/* Clear the shell environment before setting up a new one */
 	if (clearenv() != 0) {
 		perror("clearenv");
@@ -196,16 +208,6 @@ int main(int argc, char **argv)
 		setup_environment(pwd->pw_name, fp);
 		fclose(fp);
 	}
-
-	/*
-	 * Check whether to chdir() into the users home directory
-	 *
-	 * YES, if RUNASUSER_CHDIR = 1 (default)
-	 * NO, if RUNASUSER_CHDIR = 0
-	 */
-	to_chdir = getenv("RUNASUSER_CHDIR");
-	if (!to_chdir || atoi(to_chdir) != 0)
-		chdir(pwd->pw_dir);
 
 	printf("Execing [ ");
 	for (i = 2; i < argc; i++)
