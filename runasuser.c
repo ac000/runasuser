@@ -186,6 +186,7 @@ int main(int argc, char **argv)
 	setenv("HOME", pwd->pw_dir, 1);
 	setenv("USER", pwd->pw_name, 1);
 	setenv("RUNASUSER_USER", from_user, 1);
+	setenv("PATH", "/usr/local/bin:/bin:/usr/bin", 1);
 	/* Read the rest of the environment from the config file */
 	if ((fp = fopen("/etc/runasuser.env.conf", "r")))
 		;
