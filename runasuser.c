@@ -6,18 +6,69 @@
  * See COPYING
  */
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <fcntl.h>
 #include <pwd.h>
 #include <grp.h>
 
+static int command_found(char *command);
 static void setup_environment(char *to_user, FILE *fp);
 static int check_user_auth(char *from_user, char *to_user, FILE *fp);
+
+static int command_found(char *command)
+{
+	int ret = 0;
+	char *path = strdup(getenv("PATH"));
+	char *token;
+	struct stat sb;
+	char fpath[PATH_MAX + 1];
+
+	/* Handle ./test_command */
+	if (strncmp(command, "./", 2) == 0) {
+		strncpy(fpath, get_current_dir_name(), PATH_MAX);
+		strncat(fpath, "/", PATH_MAX - strlen(fpath));
+		strncat(fpath, command + 2, PATH_MAX - strlen(fpath));
+		if (stat(fpath, &sb) == 0)
+			ret = 1;
+	/* Handle /tmp/test_command */
+	} else if (strncmp(command, "/", 1) == 0) {
+		if (stat(command, &sb) == 0)
+			ret = 1;
+	/* Handle bin/test_command */
+	} else if (strstr(command, "/")) {
+		strncpy(fpath, get_current_dir_name(), PATH_MAX);
+		strncat(fpath, "/", PATH_MAX - strlen(fpath));
+		strncat(fpath, command, PATH_MAX - strlen(fpath));
+		if (stat(fpath, &sb) == 0)
+			ret = 1;
+	} else {
+		/* Look for command in PATH */
+		for (;;) {
+			token = strtok(path, ":");
+			if (token == NULL)
+				break;
+			strncpy(fpath, token, PATH_MAX);
+			strncat(fpath, "/", PATH_MAX - strlen(fpath));
+			strncat(fpath, command, PATH_MAX - strlen(fpath));
+			if (stat(fpath, &sb) == 0) {
+				ret = 1;
+				break;
+			}
+			path = NULL;
+		}
+	}
+	free(path);
+
+	return ret;
+}
 
 static void setup_environment(char *to_user, FILE *fp)
 {
@@ -207,6 +258,12 @@ int main(int argc, char **argv)
 	if (fp) {
 		setup_environment(pwd->pw_name, fp);
 		fclose(fp);
+	}
+
+	/* check if the command to run exists */
+	if (!command_found(argv[2])) {
+		fprintf(stderr, "runasuser: %s: command not found\n", argv[2]);
+		exit(-1);
 	}
 
 	printf("Execing [ ");
