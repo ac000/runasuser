@@ -284,7 +284,10 @@ int main(int argc, char **argv)
 	for (i = 3; i < maxfd; i++)
 		close(i);
 
-	execvp(argv[2], argv + 2);
+	if (execvp(argv[2], argv + 2) == -1) {
+		perror("exec");
+		exit(-1);
+	}
 
 	exit(0);
 }
