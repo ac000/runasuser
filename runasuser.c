@@ -19,6 +19,9 @@
 #include <pwd.h>
 #include <grp.h>
 
+#define BUF_SIZE	4096	/* read buffer size */
+#define FD_MAX		1024	/* max open file descriptors */
+
 static int command_found(char *command);
 static void setup_environment(char *to_user, FILE *fp);
 static int check_user_auth(char *from_user, char *to_user, FILE *fp);
@@ -79,17 +82,17 @@ static void setup_environment(char *to_user, FILE *fp)
 	char *saveptr2 = NULL;
 	char *env;
 	char *value;
-	char buf[4096];
+	char buf[BUF_SIZE];
 	char user[13];
 
-	string = malloc(4096);
+	string = malloc(BUF_SIZE);
 	if (!string) {
 		perror("malloc (string)");
 		exit(-1);
 	}
 
-	while (fgets(buf, 4096, fp)) {
-		memset(string, 0, 4096);
+	while (fgets(buf, BUF_SIZE, fp)) {
+		memset(string, 0, BUF_SIZE);
 		sscanf(buf, "%12s\t%4095s[^\n]", user, string);
 		if (strcmp(user, to_user) == 0) {
 			for (;;) {
@@ -123,7 +126,7 @@ static void setup_environment(char *to_user, FILE *fp)
 static int check_user_auth(char *from_user, char *to_user, FILE *fp)
 {
 	int ret = 0;
-	char buf[4096];
+	char buf[BUF_SIZE];
 	char user[13];
 	char *user_list;
 	char *token;
@@ -135,7 +138,7 @@ static int check_user_auth(char *from_user, char *to_user, FILE *fp)
 	}
 	memset(user_list, 0, 101);
 
-	while (fgets(buf, 4096, fp) && !ret) {
+	while (fgets(buf, BUF_SIZE, fp) && !ret) {
 		sscanf(buf, "%12s\t%100s[^\n]", user, user_list);
 		if (strcmp(user, from_user) == 0) {
 			for (;;) {
@@ -282,7 +285,7 @@ int main(int argc, char **argv)
 	 */
 	maxfd = sysconf(_SC_OPEN_MAX);
 	if (maxfd == -1)
-		maxfd = 1024; /* Standard no. of allowed open fd's */
+		maxfd = FD_MAX;
 	for (i = 3; i < maxfd; i++)
 		close(i);
 
