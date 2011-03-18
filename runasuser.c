@@ -22,6 +22,9 @@
 #define BUF_SIZE	4096	/* read buffer size */
 #define FD_MAX		1024	/* max open file descriptors */
 
+#define SETENV_ERR(env) fprintf(stderr, "setenv: %s: can't set environment "\
+							"variable\n", env);
+
 static int command_found(char *command);
 static void setup_environment(char *to_user, FILE *fp);
 static int check_user_auth(char *from_user, char *to_user, FILE *fp);
@@ -113,7 +116,10 @@ static void setup_environment(char *to_user, FILE *fp)
 				subtoken = strtok_r(token, "=", &saveptr2);
 				value = subtoken;
 
-				setenv(env, value, 1);
+				if (setenv(env, value, 1) != 0) {
+					SETENV_ERR(env);
+					exit(-1);
+				}
 
 				string = NULL;
 			}
@@ -253,10 +259,22 @@ int main(int argc, char **argv)
 		perror("clearenv");
 		exit(-1);
 	}
-	setenv("HOME", pwd->pw_dir, 1);
-	setenv("USER", pwd->pw_name, 1);
-	setenv("RUNASUSER_USER", from_user, 1);
-	setenv("PATH", "/usr/local/bin:/bin:/usr/bin", 1);
+	if (setenv("HOME", pwd->pw_dir, 1) != 0) {
+		SETENV_ERR("HOME");
+		exit(-1);
+	}
+	if (setenv("USER", pwd->pw_name, 1) != 0) {
+		SETENV_ERR("USER");
+		exit(-1);
+	}
+	if (setenv("RUNASUSER_USER", from_user, 1) != 0) {
+		SETENV_ERR("RUNASUSER_USER");
+		exit(-1);
+	}
+	if (setenv("PATH", "/usr/local/bin:/bin:/usr/bin", 1) != 0) {
+		SETENV_ERR("PATH");
+		exit(-1);
+	}
 	/* Read the rest of the environment from the config file */
 	if ((fp = fopen("/etc/runasuser.env.conf", "r")))
 		;
