@@ -238,8 +238,12 @@ int main(int argc, char **argv)
 	 * NO, if RUNASUSER_CHDIR = 0
 	 */
 	to_chdir = getenv("RUNASUSER_CHDIR");
-	if (!to_chdir || atoi(to_chdir) != 0)
-		chdir(pwd->pw_dir);
+	if (!to_chdir || atoi(to_chdir) != 0) {
+		if (chdir(pwd->pw_dir) != 0) {
+			perror("chdir");
+			exit(-1);
+		}
+	}
 
 	/* Clear the shell environment before setting up a new one */
 	if (clearenv() != 0) {
