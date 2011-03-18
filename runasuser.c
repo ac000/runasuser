@@ -281,6 +281,8 @@ int main(int argc, char **argv)
 	 * A little heavy handed, but gets the job done.
 	 */
 	maxfd = sysconf(_SC_OPEN_MAX);
+	if (maxfd == -1)
+		maxfd = 1024; /* Standard no. of allowed open fd's */
 	for (i = 3; i < maxfd; i++)
 		close(i);
 
