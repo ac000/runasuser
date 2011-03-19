@@ -18,6 +18,7 @@
 #include <fcntl.h>
 #include <pwd.h>
 #include <grp.h>
+#include <syslog.h>
 
 #define BUF_SIZE	4096	/* read buffer size */
 #define FD_MAX		1024	/* max open file descriptors */
@@ -25,11 +26,23 @@
 #define SETENV_ERR(env) fprintf(stderr, "setenv: %s: can't set environment "\
 							"variable\n", env);
 
-static int command_found(char *command);
+static void do_log(char *from_user, char *to_user, char *command);
+static int command_found(char *command, char *cmdpath);
 static int setup_environment(char *to_user, FILE *fp);
 static int check_user_auth(char *from_user, char *to_user, FILE *fp);
 
-static int command_found(char *command)
+static void do_log(char *from_user, char *to_user, char *command)
+{
+	openlog("runasuser", LOG_ODELAY, LOG_AUTHPRIV);
+	/* We do ttyname(0) + 5 to loose the /dev/ */
+	syslog(LOG_INFO, "%s : TTY=%s ; PWD=%s ; USER=%s ; COMMAND=%s",
+						from_user, ttyname(0) + 5,
+						get_current_dir_name(),
+						to_user, command);
+	closelog();
+}
+
+static int command_found(char *command, char *cmdpath)
 {
 	int ret = 0;
 	char *path = strdup(getenv("PATH"));
@@ -46,7 +59,8 @@ static int command_found(char *command)
 			ret = 1;
 	/* Handle /tmp/test_command */
 	} else if (strncmp(command, "/", 1) == 0) {
-		if (stat(command, &sb) == 0)
+		strcpy(fpath, command);
+		if (stat(fpath, &sb) == 0)
 			ret = 1;
 	/* Handle bin/test_command */
 	} else if (strstr(command, "/")) {
@@ -72,6 +86,7 @@ static int command_found(char *command)
 		}
 	}
 	free(path);
+	strcpy(cmdpath, fpath);
 
 	return ret;
 }
@@ -179,6 +194,7 @@ int main(int argc, char **argv)
 	static FILE *fp;
 	char *to_chdir;
 	char *from_user;
+	char cmdpath[PATH_MAX + 1];
 	long maxfd;
 
 	if (argc < 3) {
@@ -311,7 +327,7 @@ int main(int argc, char **argv)
 	}
 
 	/* check if the command to run exists */
-	if (!command_found(argv[2])) {
+	if (!command_found(argv[2], cmdpath)) {
 		fprintf(stderr, "runasuser: %s: command not found\n", argv[2]);
 		ret = EXIT_FAILURE;
 		goto out;
@@ -322,6 +338,9 @@ int main(int argc, char **argv)
 		printf("%s ", argv[i]);	
 
 	printf("]\n");
+
+	/* Log info to syslog, same format as sudo */
+	do_log(from_user, pwd->pw_name, cmdpath);
 
 	/*
 	 * Close all open file descriptors above 2 (stderr)
