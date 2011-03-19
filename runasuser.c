@@ -26,7 +26,7 @@
 							"variable\n", env);
 
 static int command_found(char *command);
-static void setup_environment(char *to_user, FILE *fp);
+static int setup_environment(char *to_user, FILE *fp);
 static int check_user_auth(char *from_user, char *to_user, FILE *fp);
 
 static int command_found(char *command)
@@ -76,8 +76,9 @@ static int command_found(char *command)
 	return ret;
 }
 
-static void setup_environment(char *to_user, FILE *fp)
+static int setup_environment(char *to_user, FILE *fp)
 {
+	int ret = 1;
 	char *string;
 	char *token;
 	char *subtoken;
@@ -91,7 +92,8 @@ static void setup_environment(char *to_user, FILE *fp)
 	string = malloc(BUF_SIZE);
 	if (!string) {
 		perror("malloc (string)");
-		exit(-1);
+		ret = 0;
+		goto out;
 	}
 
 	while (fgets(buf, BUF_SIZE, fp)) {
@@ -118,7 +120,8 @@ static void setup_environment(char *to_user, FILE *fp)
 
 				if (setenv(env, value, 1) != 0) {
 					SETENV_ERR(env);
-					exit(-1);
+					ret = 0;
+					goto out;
 				}
 
 				string = NULL;
@@ -127,6 +130,9 @@ static void setup_environment(char *to_user, FILE *fp)
 		}
 	}
 	free(string);
+
+out:
+	return ret;
 }
 
 static int check_user_auth(char *from_user, char *to_user, FILE *fp)
@@ -140,7 +146,7 @@ static int check_user_auth(char *from_user, char *to_user, FILE *fp)
 	user_list = malloc(101);
 	if (!user_list) {
 		perror("malloc (user_list)");
-		exit(-1);
+		goto out;
 	}
 	memset(user_list, 0, 101);
 
@@ -161,11 +167,13 @@ static int check_user_auth(char *from_user, char *to_user, FILE *fp)
 	}
 	free(user_list);
 
+out:
 	return ret;
 }
 
 int main(int argc, char **argv)
 {
+	int ret = EXIT_SUCCESS;
 	int i;
 	struct passwd *pwd;
 	static FILE *fp;
@@ -175,13 +183,15 @@ int main(int argc, char **argv)
 
 	if (argc < 3) {
 		fprintf(stderr, "Usage: runasuser user program [args ...]\n");
-		exit(-1);
+		ret = EXIT_FAILURE;
+		goto out;
 	}
 
 	pwd = getpwnam(argv[1]);
 	if (!pwd) {
 		fprintf(stderr, "Error: No such user %s\n", argv[1]);
-		exit(-1);
+		ret = EXIT_FAILURE;
+		goto out;
 	}
 
 	if ((fp = fopen("/etc/runasuser.conf", "r"))) {
@@ -190,7 +200,8 @@ int main(int argc, char **argv)
 		;
 	} else {
 		perror("fopen (runasuser.conf)");
-		exit(-1);
+		ret = EXIT_FAILURE;
+		goto out;
 	}
 
 	/* Check the user calling runasuser */
@@ -201,7 +212,8 @@ int main(int argc, char **argv)
 		if (!check_user_auth(from_user, argv[1], fp)) {
 			fprintf(stderr, "Error: You are not authorized to run "
 							"as %s\n", argv[1]);
-			exit(-1);
+			ret = EXIT_FAILURE;
+			goto out;
 		}
 	}
 	fclose(fp);
@@ -209,7 +221,8 @@ int main(int argc, char **argv)
 	/* Drop all supplementary groups of the calling user */
 	if (setgroups(0, NULL) != 0) {
 		perror("setgroups");
-		exit(-1);
+		ret = EXIT_FAILURE;
+		goto out;
 	}
 
 	pwd = getpwnam(argv[1]);
@@ -221,7 +234,8 @@ int main(int argc, char **argv)
 	 */
 	if (initgroups(pwd->pw_name, pwd->pw_gid) != 0) {
 		perror("initgroups");
-		exit(-1);
+		ret = EXIT_FAILURE;
+		goto out;
 	}
 
 	/*
@@ -230,12 +244,14 @@ int main(int argc, char **argv)
 	 */
 	if (setgid(pwd->pw_gid) != 0) {
 		perror("setgid");
-		exit(-1);
+		ret = EXIT_FAILURE;
+		goto out;
 	}
 	if (setuid(pwd->pw_uid) != 0) {
 		/* It's important to bail if the setuid() fails. */
 		perror("setuid");
-		exit(-1);
+		ret = EXIT_FAILURE;
+		goto out;
 	}
 
 	/*
@@ -250,30 +266,36 @@ int main(int argc, char **argv)
 	if (!to_chdir || atoi(to_chdir) != 0) {
 		if (chdir(pwd->pw_dir) != 0) {
 			perror("chdir");
-			exit(-1);
+			ret = EXIT_FAILURE;
+			goto out;
 		}
 	}
 
 	/* Clear the shell environment before setting up a new one */
 	if (clearenv() != 0) {
 		perror("clearenv");
-		exit(-1);
+		ret = EXIT_FAILURE;
+		goto out;
 	}
 	if (setenv("HOME", pwd->pw_dir, 1) != 0) {
 		SETENV_ERR("HOME");
-		exit(-1);
+		ret = EXIT_FAILURE;
+		goto out;
 	}
 	if (setenv("USER", pwd->pw_name, 1) != 0) {
 		SETENV_ERR("USER");
-		exit(-1);
+		ret = EXIT_FAILURE;
+		goto out;
 	}
 	if (setenv("RUNASUSER_USER", from_user, 1) != 0) {
 		SETENV_ERR("RUNASUSER_USER");
-		exit(-1);
+		ret = EXIT_FAILURE;
+		goto out;
 	}
 	if (setenv("PATH", "/usr/local/bin:/bin:/usr/bin", 1) != 0) {
 		SETENV_ERR("PATH");
-		exit(-1);
+		ret = EXIT_FAILURE;
+		goto out;
 	}
 	/* Read the rest of the environment from the config file */
 	if ((fp = fopen("/etc/runasuser.env.conf", "r")))
@@ -281,14 +303,18 @@ int main(int argc, char **argv)
 	else ((fp = fopen("/usr/local/etc/runasuser.env.conf", "r")))
 		;
 	if (fp) {
-		setup_environment(pwd->pw_name, fp);
+		if (!setup_environment(pwd->pw_name, fp)) {
+			ret = EXIT_FAILURE;
+			goto out;
+		}
 		fclose(fp);
 	}
 
 	/* check if the command to run exists */
 	if (!command_found(argv[2])) {
 		fprintf(stderr, "runasuser: %s: command not found\n", argv[2]);
-		exit(-1);
+		ret = EXIT_FAILURE;
+		goto out;
 	}
 
 	printf("Execing [ ");
@@ -309,8 +335,10 @@ int main(int argc, char **argv)
 
 	if (execvp(argv[2], argv + 2) == -1) {
 		perror("exec");
-		exit(-1);
+		ret = EXIT_FAILURE;
+		goto out;
 	}
 
-	exit(0);
+out:
+	exit(ret);
 }
