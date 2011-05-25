@@ -33,13 +33,15 @@ static int check_user_auth(char *from_user, char *to_user, FILE *fp);
 
 static void do_log(char *from_user, char *to_user, char *command)
 {
+	char *cdn = get_current_dir_name();
+
 	openlog("runasuser", LOG_ODELAY, LOG_AUTHPRIV);
 	/* We do ttyname(0) + 5 to loose the /dev/ */
 	syslog(LOG_INFO, "%s : TTY=%s ; PWD=%s ; USER=%s ; COMMAND=%s",
 						from_user, ttyname(0) + 5,
-						get_current_dir_name(),
-						to_user, command);
+						cdn, to_user, command);
 	closelog();
+	free(cdn);
 }
 
 static int command_found(char *command, char *cmdpath)
@@ -49,10 +51,12 @@ static int command_found(char *command, char *cmdpath)
 	char *token;
 	struct stat sb;
 	char fpath[PATH_MAX + 1];
+	char *cdn;
 
+	cdn = get_current_dir_name();
 	/* Handle ./test_command */
 	if (strncmp(command, "./", 2) == 0) {
-		strncpy(fpath, get_current_dir_name(), PATH_MAX);
+		strncpy(fpath, cdn, PATH_MAX);
 		strncat(fpath, "/", PATH_MAX - strlen(fpath));
 		strncat(fpath, command + 2, PATH_MAX - strlen(fpath));
 		if (stat(fpath, &sb) == 0)
@@ -64,7 +68,7 @@ static int command_found(char *command, char *cmdpath)
 			ret = 1;
 	/* Handle bin/test_command */
 	} else if (strstr(command, "/")) {
-		strncpy(fpath, get_current_dir_name(), PATH_MAX);
+		strncpy(fpath, cdn, PATH_MAX);
 		strncat(fpath, "/", PATH_MAX - strlen(fpath));
 		strncat(fpath, command, PATH_MAX - strlen(fpath));
 		if (stat(fpath, &sb) == 0)
@@ -86,6 +90,7 @@ static int command_found(char *command, char *cmdpath)
 		}
 	}
 	free(path);
+	free(cdn);
 	strcpy(cmdpath, fpath);
 
 	return ret;
