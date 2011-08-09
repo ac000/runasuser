@@ -26,10 +26,6 @@
 #define SETENV_ERR(env) fprintf(stderr, "setenv: %s: can't set environment "\
 							"variable\n", env);
 
-static void do_log(char *from_user, char *to_user, char *command);
-static int command_found(char *command, char *cmdpath);
-static int setup_environment(char *to_user, FILE *fp);
-static int check_user_auth(char *from_user, char *to_user, FILE *fp);
 
 static void do_log(char *from_user, char *to_user, char *command)
 {
