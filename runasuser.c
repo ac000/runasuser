@@ -356,7 +356,6 @@ int main(int argc, char **argv)
 	if (execvp(argv[2], argv + 2) == -1) {
 		perror("exec");
 		ret = EXIT_FAILURE;
-		goto out;
 	}
 
 out:
