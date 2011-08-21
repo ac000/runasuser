@@ -52,17 +52,17 @@ static int command_found(char *command, char *cmdpath)
 	cdn = get_current_dir_name();
 	/* Handle ./test_command */
 	if (strncmp(command, "./", 2) == 0) {
-		snprintf(fpath, PATH_MAX, "%s/%s", cdn, command + 2);
+		snprintf(fpath, sizeof(fpath), "%s/%s", cdn, command + 2);
 		if (stat(fpath, &sb) == 0)
 			ret = 1;
 	/* Handle /tmp/test_command */
 	} else if (strncmp(command, "/", 1) == 0) {
-		snprintf(fpath, PATH_MAX, "%s", command);
+		snprintf(fpath, sizeof(fpath), "%s", command);
 		if (stat(fpath, &sb) == 0)
 			ret = 1;
 	/* Handle bin/test_command */
 	} else if (strstr(command, "/")) {
-		snprintf(fpath, PATH_MAX, "%s/%s", cdn, command);
+		snprintf(fpath, sizeof(fpath), "%s/%s", cdn, command);
 		if (stat(fpath, &sb) == 0)
 			ret = 1;
 	} else {
@@ -71,7 +71,8 @@ static int command_found(char *command, char *cmdpath)
 			token = strtok(path, ":");
 			if (token == NULL)
 				break;
-			snprintf(fpath, PATH_MAX, "%s/%s", token, command);
+			snprintf(fpath, sizeof(fpath), "%s/%s", token,
+								command);
 			if (stat(fpath, &sb) == 0) {
 				ret = 1;
 				break;
