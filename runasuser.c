@@ -46,7 +46,7 @@ static int command_found(char *command, char *cmdpath)
 	char *path = strdup(getenv("PATH"));
 	char *token;
 	struct stat sb;
-	char fpath[PATH_MAX + 1];
+	char fpath[PATH_MAX];
 	char *cdn;
 
 	cdn = get_current_dir_name();
@@ -195,7 +195,7 @@ int main(int argc, char **argv)
 	static FILE *fp;
 	char *to_chdir;
 	char *from_user;
-	char cmdpath[PATH_MAX + 1];
+	char cmdpath[PATH_MAX];
 	long maxfd;
 
 	if (argc < 3) {
