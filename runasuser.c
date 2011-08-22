@@ -27,17 +27,48 @@
 							"variable\n", env);
 
 
-static void do_log(char *from_user, char *to_user, char *command)
+static int do_log(char *from_user, char *to_user, char *cwd, char *cmdpath,
+								char **args)
 {
+	int ret = 1;
+	char *cmd;
+	char *tmp;
 	char *cdn = get_current_dir_name();
+
+	cmd = malloc(strlen(cmdpath) + 1);
+	if (!cmd) {
+		perror("malloc");
+		ret = 0;
+		goto out;
+	}
+	snprintf(cmd, strlen(cmdpath) + 1, "%s", cmdpath);
+
+	/* Skip past runasuser the user and the command */
+	args += 3;
+	for ( ; *args != NULL; args++) {
+		tmp = realloc(cmd, sizeof(cmd) + strlen(*args) + 2);
+		if (!tmp) {
+			perror("realloc");
+			ret = 0;
+			goto out;
+		}
+		cmd = tmp;
+		strcat(cmd, " ");
+		strncat(cmd, *args, strlen(*args));
+	}
 
 	openlog("runasuser", LOG_ODELAY, LOG_AUTHPRIV);
 	/* We do ttyname(0) + 5 to loose the /dev/ */
-	syslog(LOG_INFO, "%s : TTY=%s ; PWD=%s ; USER=%s ; COMMAND=%s",
+	syslog(LOG_INFO, "%s : TTY=%s ; EWD=%s ; PWD=%s ; USER=%s ; "
+						"COMMAND=%s",
 						from_user, ttyname(0) + 5,
-						cdn, to_user, command);
+						cwd, cdn, to_user, cmd);
 	closelog();
 	free(cdn);
+	free(cmd);
+
+out:
+	return ret;
 }
 
 static int command_found(char *command, char *cmdpath)
@@ -190,6 +221,7 @@ int main(int argc, char **argv)
 	static FILE *fp;
 	char *to_chdir;
 	char *from_user;
+	char *cwd = get_current_dir_name();
 	char cmdpath[PATH_MAX];
 	long maxfd;
 
@@ -331,12 +363,17 @@ int main(int argc, char **argv)
 
 	printf("Execing [ ");
 	for (i = 2; i < argc; i++)
-		printf("%s ", argv[i]);	
+		printf("%s ", argv[i]);
 
 	printf("]\n");
 
 	/* Log info to syslog, same format as sudo */
-	do_log(from_user, pwd->pw_name, cmdpath);
+	ret = do_log(from_user, pwd->pw_name, cwd, cmdpath, argv);
+	free(cwd);
+	if (!ret) {
+		ret = EXIT_FAILURE;
+		goto out;
+	}
 
 	/*
 	 * Close all open file descriptors above 2 (stderr)
