@@ -46,7 +46,7 @@ static int do_log(char *from_user, char *to_user, char *cwd, char *cmdpath,
 	/* Skip past runasuser the user and the command */
 	args += 3;
 	for ( ; *args != NULL; args++) {
-		tmp = realloc(cmd, sizeof(cmd) + strlen(*args) + 2);
+		tmp = realloc(cmd, strlen(cmd) + strlen(*args) + 2);
 		if (!tmp) {
 			perror("realloc");
 			ret = 0;
