@@ -37,7 +37,7 @@ static int do_log(char *from_user, char *to_user, char *cwd, char *cmdpath,
 
 	cmd = malloc(strlen(cmdpath) + 1);
 	if (!cmd) {
-		perror("malloc");
+		perror("malloc cmd");
 		ret = 0;
 		goto out;
 	}
@@ -48,7 +48,7 @@ static int do_log(char *from_user, char *to_user, char *cwd, char *cmdpath,
 	for ( ; *args != NULL; args++) {
 		tmp = realloc(cmd, strlen(cmd) + strlen(*args) + 2);
 		if (!tmp) {
-			perror("realloc");
+			perror("realloc tmp");
 			ret = 0;
 			goto out;
 		}
@@ -133,7 +133,7 @@ static int setup_environment(char *to_user, FILE *fp)
 
 	string = malloc(BUF_SIZE);
 	if (!string) {
-		perror("malloc (string)");
+		perror("malloc string");
 		ret = 0;
 		goto out;
 	}
@@ -187,7 +187,7 @@ static int check_user_auth(char *from_user, char *to_user, FILE *fp)
 
 	user_list = malloc(101);
 	if (!user_list) {
-		perror("malloc (user_list)");
+		perror("malloc user_list");
 		goto out;
 	}
 	memset(user_list, 0, 101);
@@ -243,7 +243,7 @@ int main(int argc, char **argv)
 	} else if ((fp = fopen("/usr/local/etc/runasuser.conf", "r"))) {
 		;
 	} else {
-		perror("fopen (runasuser.conf)");
+		perror("fopen runasuser.conf");
 		ret = EXIT_FAILURE;
 		goto out;
 	}
