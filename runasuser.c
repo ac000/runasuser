@@ -369,7 +369,6 @@ int main(int argc, char **argv)
 
 	/* Log info to syslog, same format as sudo */
 	ret = do_log(from_user, pwd->pw_name, cwd, cmdpath, argv);
-	free(cwd);
 	if (!ret) {
 		ret = EXIT_FAILURE;
 		goto out;
@@ -391,5 +390,6 @@ int main(int argc, char **argv)
 	}
 
 out:
+	free(cwd);
 	exit(ret);
 }
