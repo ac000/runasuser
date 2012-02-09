@@ -1,7 +1,7 @@
 /*
  * runasuser.c - Run a command as a specified user
  *
- * Copyright (C) 2010-2011 - Andrew Clayton <andrew@digital-domain.net>
+ * Copyright (C) 2010-2012 - Andrew Clayton <andrew@digital-domain.net>
  * Released under the GNU General Public License (GPL) version 2
  * See COPYING
  */
