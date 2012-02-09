@@ -283,7 +283,7 @@ int main(int argc, char **argv)
 	}
 
 	/*
-  	 * Order is important, if setuid comes first,
+	 * Order is important, if setuid comes first,
 	 * then the setgid is unable to perform.
 	 */
 	if (setgid(pwd->pw_gid) != 0) {
