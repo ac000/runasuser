@@ -342,10 +342,9 @@ int main(int argc, char **argv)
 		goto out;
 	}
 	/* Read the rest of the environment from the config file */
-	if ((fp = fopen("/etc/runasuser.env.conf", "r")))
-		;
-	else ((fp = fopen("/usr/local/etc/runasuser.env.conf", "r")))
-		;
+	fp = fopen("/etc/runasuser.env.conf", "r");
+	if (!fp)
+		fp = fopen("/usr/local/etc/runasuser.env.conf", "r");
 	if (fp) {
 		if (!setup_environment(pwd->pw_name, fp)) {
 			ret = EXIT_FAILURE;
