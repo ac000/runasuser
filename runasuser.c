@@ -238,14 +238,14 @@ int main(int argc, char **argv)
 		goto out;
 	}
 
-	if ((fp = fopen("/etc/runasuser.conf", "r"))) {
-		;
-	} else if ((fp = fopen("/usr/local/etc/runasuser.conf", "r"))) {
-		;
-	} else {
-		perror("fopen runasuser.conf");
-		ret = EXIT_FAILURE;
-		goto out;
+	fp = fopen("/etc/runasuser.conf", "r");
+	if (!fp) {
+		fp = fopen("/usr/local/etc/runasuser.conf", "r");
+		if (!fp) {
+			perror("fopen runasuser.conf");
+			ret = EXIT_FAILURE;
+			goto out;
+		}
 	}
 
 	/* Check the user calling runasuser */
