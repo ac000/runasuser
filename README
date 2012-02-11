@@ -1,7 +1,7 @@
 Overview
 ========
 
-runasuser allows you specify what users can run programs as what user.
+runasuser allows you to specify what users can run programs as what user.
 
 It's a bit like sudo, but the other way around. It lets you specify what
 user to run as rather than what programs can be run.
