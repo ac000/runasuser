@@ -34,6 +34,7 @@ static int do_log(char *from_user, char *to_user, char *cwd, char *cmdpath,
 	char *cmd;
 	char *tmp;
 	char *cdn = get_current_dir_name();
+	char *tty;
 
 	cmd = malloc(strlen(cmdpath) + 1);
 	if (!cmd) {
@@ -58,10 +59,15 @@ static int do_log(char *from_user, char *to_user, char *cwd, char *cmdpath,
 	}
 
 	openlog("runasuser", LOG_ODELAY, LOG_AUTHPRIV);
-	/* We do ttyname(0) + 5 to loose the /dev/ */
+	tty = ttyname(0);
+	/*
+	 * We do tty + 5 to loose the /dev/ or if there is no tty,
+	 * e.g, running from cron, we just display (none).
+	 */
 	syslog(LOG_INFO, "%s : TTY=%s ; EWD=%s ; PWD=%s ; USER=%s ; "
 						"COMMAND=%s",
-						from_user, ttyname(0) + 5,
+						from_user,
+						(tty) ? tty + 5 : "(none)",
 						cwd, cdn, to_user, cmd);
 	closelog();
 	free(cdn);
