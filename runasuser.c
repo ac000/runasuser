@@ -27,6 +27,25 @@
 							"variable\n", env);
 
 
+/*
+ * This will close all open file descriptors above 2 (stderr)
+ * by running through the fd's in /proc/self/fd
+ */
+static void close_fds(void)
+{
+	DIR *dir;
+	struct dirent *d;
+
+	dir = opendir("proc/self/fd");
+	while ((d = readdir(dir)) != NULL) {
+		if (atoi(d->d_name) < 3)
+			continue;
+
+		close(atoi(d->d_name));
+	}
+	closedir(dir);
+}
+
 static int do_log(char *from_user, char *to_user, char *cwd, char *cmdpath,
 								char **args)
 {
@@ -379,15 +398,8 @@ int main(int argc, char **argv)
 		goto out;
 	}
 
-	/*
-	 * Close all open file descriptors above 2 (stderr)
-	 * A little heavy handed, but gets the job done.
-	 */
-	maxfd = sysconf(_SC_OPEN_MAX);
-	if (maxfd == -1)
-		maxfd = FD_MAX;
-	for (i = 3; i < maxfd; i++)
-		close(i);
+	/* Close all open file descriptors above 2 */
+	close_fds();
 
 	if (execvp(argv[2], argv + 2) == -1) {
 		perror("exec");
