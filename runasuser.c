@@ -37,7 +37,7 @@ static void close_fds(void)
 	DIR *dir;
 	struct dirent *d;
 
-	dir = opendir("proc/self/fd");
+	dir = opendir("/proc/self/fd");
 	while ((d = readdir(dir)) != NULL) {
 		if (atoi(d->d_name) < 3)
 			continue;
