@@ -16,6 +16,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <dirent.h>
 #include <pwd.h>
 #include <grp.h>
 #include <syslog.h>
@@ -248,7 +249,6 @@ int main(int argc, char **argv)
 	char *from_user;
 	char *cwd = get_current_dir_name();
 	char cmdpath[PATH_MAX];
-	long maxfd;
 
 	if (argc < 3) {
 		fprintf(stderr, "Usage: runasuser user program [args ...]\n");
