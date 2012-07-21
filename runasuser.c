@@ -127,7 +127,7 @@ static int command_found(char *command, char *cmdpath)
 			if (token == NULL)
 				break;
 			snprintf(fpath, sizeof(fpath), "%s/%s", token,
-								command);
+					command);
 			if (stat(fpath, &sb) == 0) {
 				ret = 1;
 				break;
