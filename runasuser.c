@@ -24,8 +24,8 @@
 #define BUF_SIZE	4096	/* read buffer size */
 #define FD_MAX		1024	/* max open file descriptors */
 
-#define SETENV_ERR(env) fprintf(stderr, "setenv: %s: can't set environment "\
-							"variable\n", env);
+#define SETENV_ERR(env) fprintf(stderr, "setenv: %s: can't set environment " \
+		"variable\n", env);
 
 
 /*
@@ -48,7 +48,7 @@ static void close_fds(void)
 }
 
 static int do_log(char *from_user, char *to_user, char *cwd, char *cmdpath,
-								char **args)
+		  char **args)
 {
 	int ret = 1;
 	char *cmd;
@@ -85,10 +85,8 @@ static int do_log(char *from_user, char *to_user, char *cwd, char *cmdpath,
 	 * e.g, running from cron, we just display (none).
 	 */
 	syslog(LOG_INFO, "%s : TTY=%s ; EWD=%s ; PWD=%s ; USER=%s ; "
-						"COMMAND=%s",
-						from_user,
-						(tty) ? tty + 5 : "(none)",
-						cwd, cdn, to_user, cmd);
+			"COMMAND=%s", from_user, (tty) ? tty + 5 : "(none)",
+			cwd, cdn, to_user, cmd);
 	closelog();
 	free(cdn);
 	free(cmd);
@@ -191,7 +189,6 @@ static int setup_environment(char *to_user, FILE *fp)
 					ret = 0;
 					goto out;
 				}
-
 				string = NULL;
 			}
 			break;
@@ -280,7 +277,7 @@ int main(int argc, char **argv)
 	if (getuid() > 0) {
 		if (!check_user_auth(from_user, argv[1], fp)) {
 			fprintf(stderr, "Error: You are not authorized to run "
-							"as %s\n", argv[1]);
+					"as %s\n", argv[1]);
 			ret = EXIT_FAILURE;
 			goto out;
 		}
