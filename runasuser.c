@@ -47,8 +47,8 @@ static void close_fds(void)
 	closedir(dir);
 }
 
-static int do_log(char *from_user, char *to_user, char *cwd, char *cmdpath,
-		  char **args)
+static int do_log(const char *from_user, const char *to_user, const char *cwd,
+		  const char *cmdpath, char **args)
 {
 	int ret = 1;
 	char *cmd;
@@ -95,7 +95,7 @@ out:
 	return ret;
 }
 
-static int command_found(char *command, char *cmdpath)
+static int command_found(const char *command, char *cmdpath)
 {
 	int ret = 0;
 	char *path = strdup(getenv("PATH"));
@@ -140,7 +140,7 @@ static int command_found(char *command, char *cmdpath)
 	return ret;
 }
 
-static int setup_environment(char *to_user, FILE *fp)
+static int setup_environment(const char *to_user, FILE *fp)
 {
 	int ret = 1;
 	char *string;
@@ -195,7 +195,8 @@ out:
 	return ret;
 }
 
-static int check_user_auth(char *from_user, char *to_user, FILE *fp)
+static int check_user_auth(const char *from_user, const char *to_user,
+			   FILE *fp)
 {
 	int ret = 0;
 	char buf[BUF_SIZE];
