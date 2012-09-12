@@ -122,17 +122,15 @@ static int command_found(char *command, char *cmdpath)
 			ret = 1;
 	} else {
 		/* Look for command in PATH */
-		for (;;) {
-			token = strtok(path, ":");
-			if (token == NULL)
-				break;
+		token = strtok(path, ":");
+		while (token != NULL) {
 			snprintf(fpath, sizeof(fpath), "%s/%s", token,
 					command);
 			if (stat(fpath, &sb) == 0) {
 				ret = 1;
 				break;
 			}
-			path = NULL;
+			token = strtok(NULL, ":");
 		}
 	}
 	free(path);
@@ -150,8 +148,6 @@ static int setup_environment(char *to_user, FILE *fp)
 	char *subtoken;
 	char *saveptr1 = NULL;
 	char *saveptr2 = NULL;
-	char *env;
-	char *value;
 	char buf[BUF_SIZE];
 	char user[13];
 
@@ -166,10 +162,10 @@ static int setup_environment(char *to_user, FILE *fp)
 		memset(string, 0, BUF_SIZE);
 		sscanf(buf, "%12s\t%4095s[^\n]", user, string);
 		if (strcmp(user, to_user) == 0) {
-			for (;;) {
-				token = strtok_r(string, ",", &saveptr1);
-				if (token == NULL)
-					break;
+			token = strtok_r(string, ",", &saveptr1);
+			while (token != NULL) {
+				char *env;
+				char *value;
 
 				/*
 				 * Split the environment string into its
@@ -180,7 +176,6 @@ static int setup_environment(char *to_user, FILE *fp)
 				 */
 				subtoken = strtok_r(token, "=", &saveptr2);
 				env = subtoken;
-				token = NULL;
 				subtoken = strtok_r(token, "=", &saveptr2);
 				value = subtoken;
 
@@ -189,7 +184,7 @@ static int setup_environment(char *to_user, FILE *fp)
 					ret = 0;
 					goto out;
 				}
-				string = NULL;
+				token = strtok_r(NULL, ",", &saveptr1);
 			}
 			break;
 		}
@@ -218,15 +213,13 @@ static int check_user_auth(char *from_user, char *to_user, FILE *fp)
 	while (fgets(buf, BUF_SIZE, fp) && !ret) {
 		sscanf(buf, "%12s\t%100s[^\n]", user, user_list);
 		if (strcmp(user, from_user) == 0) {
-			for (;;) {
-				token = strtok(user_list, ",");
-				if (token == NULL)
-					break;
+			token = strtok(user_list, ",");
+			while (token != NULL) {
 				if (strcmp(token, to_user) == 0) {
 					ret = 1;
 					break;
 				}
-				user_list = NULL;
+				token = strtok(NULL, ",");
 			}
 		}
 	}
