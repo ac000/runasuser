@@ -176,7 +176,7 @@ static int setup_environment(const char *to_user, FILE *fp)
 				 */
 				subtoken = strtok_r(token, "=", &saveptr2);
 				env = subtoken;
-				subtoken = strtok_r(token, "=", &saveptr2);
+				subtoken = strtok_r(NULL, "=", &saveptr2);
 				value = subtoken;
 
 				if (setenv(env, value, 1) != 0) {
