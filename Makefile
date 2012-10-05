@@ -5,4 +5,4 @@ runasuser: runasuser.c
 	$(CC) $(CFLAGS) -o runasuser runasuser.c
 
 clean:
-	rm runasuser
+	rm -f runasuser
