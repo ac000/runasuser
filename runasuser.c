@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <limits.h>
 #include <sys/types.h>
@@ -95,9 +96,9 @@ out:
 	return ret;
 }
 
-static int command_found(const char *command, char *cmdpath)
+static bool command_found(const char *command, char *cmdpath)
 {
-	int ret = 0;
+	int ret = false;
 	char *path = strdup(getenv("PATH"));
 	struct stat sb;
 	char fpath[PATH_MAX];
@@ -108,17 +109,17 @@ static int command_found(const char *command, char *cmdpath)
 	if (strncmp(command, "./", 2) == 0) {
 		snprintf(fpath, sizeof(fpath), "%s/%s", cdn, command + 2);
 		if (stat(fpath, &sb) == 0)
-			ret = 1;
+			ret = true;
 	/* Handle /tmp/test_command */
 	} else if (strncmp(command, "/", 1) == 0) {
 		snprintf(fpath, sizeof(fpath), "%s", command);
 		if (stat(fpath, &sb) == 0)
-			ret = 1;
+			ret = true;
 	/* Handle bin/test_command */
 	} else if (strstr(command, "/")) {
 		snprintf(fpath, sizeof(fpath), "%s/%s", cdn, command);
 		if (stat(fpath, &sb) == 0)
-			ret = 1;
+			ret = true;
 	} else {
 		/* Look for command in PATH */
 		char *token = strtok(path, ":");
@@ -126,7 +127,7 @@ static int command_found(const char *command, char *cmdpath)
 			snprintf(fpath, sizeof(fpath), "%s/%s", token,
 					command);
 			if (stat(fpath, &sb) == 0) {
-				ret = 1;
+				ret = true;
 				break;
 			}
 			token = strtok(NULL, ":");
