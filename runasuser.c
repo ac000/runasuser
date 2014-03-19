@@ -1,7 +1,7 @@
 /*
  * runasuser.c - Run a command as a specified user
  *
- * Copyright (C) 2010-2012 - Andrew Clayton <andrew@digital-domain.net>
+ * Copyright (C) 2010 - 2014	Andrew Clayton <andrew@digital-domain.net>
  * Released under the GNU General Public License (GPL) version 2
  * See COPYING
  */
@@ -99,7 +99,6 @@ static int command_found(const char *command, char *cmdpath)
 {
 	int ret = 0;
 	char *path = strdup(getenv("PATH"));
-	char *token;
 	struct stat sb;
 	char fpath[PATH_MAX];
 	char *cdn;
@@ -122,7 +121,7 @@ static int command_found(const char *command, char *cmdpath)
 			ret = 1;
 	} else {
 		/* Look for command in PATH */
-		token = strtok(path, ":");
+		char *token = strtok(path, ":");
 		while (token != NULL) {
 			snprintf(fpath, sizeof(fpath), "%s/%s", token,
 					command);
