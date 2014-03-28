@@ -23,7 +23,6 @@
 #include <syslog.h>
 
 #define BUF_SIZE	4096	/* read buffer size */
-#define FD_MAX		1024	/* max open file descriptors */
 
 #define SETENV_ERR(env) fprintf(stderr, "setenv: %s: can't set environment " \
 		"variable\n", env);
