@@ -52,6 +52,7 @@ static int do_log(const char *from_user, const char *to_user, const char *cwd,
 		  const char *cmdpath, char **args)
 {
 	int ret = 1;
+	int len;
 	char *cmd;
 	char *tmp;
 	char *cdn = get_current_dir_name();
@@ -63,7 +64,7 @@ static int do_log(const char *from_user, const char *to_user, const char *cwd,
 		ret = 0;
 		goto out;
 	}
-	snprintf(cmd, strlen(cmdpath) + 1, "%s", cmdpath);
+	len = snprintf(cmd, strlen(cmdpath) + 1, "%s", cmdpath);
 
 	/* Skip past runasuser the user and the command */
 	args += 3;
@@ -75,7 +76,7 @@ static int do_log(const char *from_user, const char *to_user, const char *cwd,
 			goto out;
 		}
 		cmd = tmp;
-		snprintf(cmd, strlen(*args) + 2, " %s", *args);
+		len += snprintf(cmd + len, strlen(*args) + 2, " %s", *args);
 	}
 
 	openlog("runasuser", LOG_ODELAY, LOG_AUTHPRIV);
