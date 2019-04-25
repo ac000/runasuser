@@ -1,7 +1,8 @@
 /*
  * runasuser.c - Run a command as a specified user
  *
- * Copyright (C) 2010 - 2014	Andrew Clayton <andrew@digital-domain.net>
+ * Copyright (C) 2010 - 2014, 2019		Andrew Clayton
+ * 						<andrew@digital-domain.net>
  * Released under the GNU General Public License (GPL) version 2
  * See COPYING
  */
@@ -74,8 +75,7 @@ static int do_log(const char *from_user, const char *to_user, const char *cwd,
 			goto out;
 		}
 		cmd = tmp;
-		strcat(cmd, " ");
-		strncat(cmd, *args, strlen(*args));
+		snprintf(cmd, strlen(*args) + 2, " %s", *args);
 	}
 
 	openlog("runasuser", LOG_ODELAY, LOG_AUTHPRIV);
